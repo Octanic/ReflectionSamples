@@ -13,7 +13,7 @@ namespace ReflectionSamples.Exemplos
 
         public string GenerateReport()
         {
-            return $"Território {Nome}\n Localização {Latitude},{Longitude}\nArea: {AreaInSquareMeters}m²\n{getAgentDescription()}";
+            return $"Território {Nome}\nLocalização {Latitude},{Longitude}\nArea: {AreaInSquareMeters}m²\n{getAgentDescription()}";
         }
 
         private string getAgentDescription()
@@ -23,7 +23,7 @@ namespace ReflectionSamples.Exemplos
 
             foreach (var agt in Agentes)
             {
-                sb.Append($"\tNome do agente: {agt.Nome}\n\tCPF/CNPJ:{agt.CpfCnpj}\n");
+                sb.Append($"\tNome do agente: {agt.Nome}\n\tCPF/CNPJ:{agt.CpfCnpj}\n\n");
 
             }
 
