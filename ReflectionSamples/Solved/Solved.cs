@@ -20,7 +20,7 @@ namespace ReflectionSamples.Solved
             //Lembre-se, o reflection tem uma lógica de nomenclatura para seus métodos. Ele permite acessar um ou vários membros com Get + o tipo do membro.
             //  Se for plural, ele vai retornar uma list de ___Info, onde ___ é o tipo de membro que vc quer acessar, se é propriedade, método
 
-            //IMPORTANTE: toda vez que você vai procurar propriedades públicas ou privadas, use o operador de bit | para incluir na busca a binding flag instance,
+            //IMPORTANTE: toda vez que você vai procurar propriedades públicas ou privadas, use o operador "OU binário" para incluir na busca a binding flag instance,
             //              para buscar membros que surgem à partir de instâncias, ou static, para membros que estão estaticamente definidos num tipo
             var propriedades = typeof(Territorio).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
 
@@ -41,46 +41,85 @@ namespace ReflectionSamples.Solved
         }
 
         //Acessar métodos
-        static void obterMetodos()
+        public static void obterMetodos()
         {
+            //Obter métodos é tão fácil quanto obter propriedades.
+            //Neste caso, não estou passando BindingFlags.
+            var metodos = territorio.GetType().GetMethods();
 
-        }
+            foreach (var metodo in metodos)
+            {
+                Console.WriteLine($"Método descoberto: {metodo.Name}");
+                Console.WriteLine("----");
+            }
 
-        //Quebrando regras: Interfaces
-        static void criarObjetoPorContrato()
-        {
+            //Veja que aqui, ele vai retornar um monte de métodos. Especialmente Getters e Setters das propriedades (que nós normalmente não preenchemos o que ele faz, mas são métodos sim)
+
+            //Podemos também executar um método específico.
+            var metodoReport = territorio.GetType().GetMethod("GenerateReport");
+            object report = metodoReport.Invoke(territorio, null);
+
+            Console.WriteLine(report);
+
+            //e sim.... se você pensou... é possível então chamar um método privado dessa forma... 
 
         }
 
         //Quebrando regras: Encapsulamento
-        static void obterStringAgentes()
+        public static void obterStringAgentes()
+        {
+            //é possível sim!
+            //O método abaixo já conhecemos... porém, 
+            var metodos = territorio.GetType().GetMethods( System.Reflection.BindingFlags.DeclaredOnly | //Apenas membro desta classe, não quero as derivadas
+                                                            System.Reflection.BindingFlags.Instance | // Todos os membros vindos de instância
+                                                            System.Reflection.BindingFlags.NonPublic); // Todos os membros não públicos.
+            foreach (var metodo in metodos)
+            {
+                Console.WriteLine($"Método descoberto: {metodo.Name}");
+                Console.WriteLine("----");
+
+                object retornoMetodo = metodo.Invoke(territorio, null);
+                Console.WriteLine(retornoMetodo);
+
+                //Se houvessem mais métodos nessa classe, ele iria invocar todos aqui, sem passar parâmetro. Isso quebra o invoke? Sim.
+            }
+
+            //Parabéns, vc acaba de quebrar a ideia de encapsulamento. - btw, tem regra do SonarQube que impede isso. RSPEC-3011
+
+            //Único cenário onde isso pode vir a ser uma utilidade: teste automatizado em código legado.
+
+            //Dá para fazer coisas piores também
+        }
+
+        //Quebrando regras: Classes abstratas
+        public static void criarObjetoPorContrato()
         {
 
         }
 
         //Carregar um Assembly
-        static void carregarAssembly()
+        public static void carregarAssembly()
         {
 
         }
 
         //Mini mapper
-        static void chamarExemploMiniMapper()
+        public static void chamarExemploMiniMapper()
         {
 
         }
         //Serializador/Deserializador de xml 
-        static void chamarExemploSerializacaoComProtocoloDuvidoso()
+        public static void chamarExemploSerializacaoComProtocoloDuvidoso()
         {
 
         }
-        static void chamarExemploDeserializacaoComProtocoloDuvidoso()
+        public static void chamarExemploDeserializacaoComProtocoloDuvidoso()
         {
 
         }
 
         //Criando expressões para combar filtragens usando LINQ
-        static void chamarExemploComboFiltro()
+        public static void chamarExemploComboFiltro()
         {
 
         }
