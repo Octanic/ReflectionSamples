@@ -12,6 +12,9 @@ namespace ReflectionSamples
         static void Main(string[] args)
         {
             territorio = GeradorDados.ObterTerritorioExemplo();
+
+
+            Console.ReadKey();
         }
 
 
