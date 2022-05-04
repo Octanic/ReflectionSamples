@@ -91,10 +91,19 @@ namespace ReflectionSamples.Solved
             //Dá para fazer coisas piores também
         }
 
-        //Quebrando regras: Classes abstratas
+        //É possível instanciar uma classe abstrata?
         public static void criarObjetoPorContrato()
         {
+            Type terreno = typeof(TerrenoAbstract);
+            var instance = Activator.CreateInstance(terreno);
 
+            var retorno = terreno.GetMethod("ExibirTipoTerreno").Invoke(instance, null);
+
+            Console.WriteLine(retorno);
+            //TL;DR: Não. Criar objetos não se limita em chamar o construtor para gerar a instância.
+            //  A forma como uma classe abstrata é gerada impede que certas alocações sejam feitas a ponto de fazê-la se tornar um objeto fora de algo que já temos.
+            //  Existe no entanto, a possibilidade de criar tipos.
+            //  Neste projeto, existe a classe TypeBuilderWithEmit, que mostra um exemplo de uma classe que é gerada do zero e faz multiplicação de um número.
         }
 
         //Carregar um Assembly

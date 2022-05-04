@@ -3,13 +3,18 @@ using System.Text;
 
 namespace ReflectionSamples.Exemplos
 {
-    public class Territorio
+    public class Territorio:TerrenoAbstract
     {
         public double Latitude { get; set; }
         public double Longitude { get; set; }
         public string Nome { get; set; }
         public IList<Agente> Agentes { get; set; }
         public double AreaInSquareMeters { get; set; }
+
+        public override string ExibirTipoTerreno()
+        {
+            return "Território";
+        }
 
         public string GenerateReport()
         {
