@@ -1,6 +1,9 @@
 ﻿using ReflectionSamples.Exemplos;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace ReflectionSamples.Solved
@@ -70,7 +73,7 @@ namespace ReflectionSamples.Solved
         {
             //é possível sim!
             //O método abaixo já conhecemos... porém, 
-            var metodos = territorio.GetType().GetMethods( System.Reflection.BindingFlags.DeclaredOnly | //Apenas membro desta classe, não quero as derivadas
+            var metodos = territorio.GetType().GetMethods(System.Reflection.BindingFlags.DeclaredOnly | //Apenas membro desta classe, não quero as derivadas
                                                             System.Reflection.BindingFlags.Instance | // Todos os membros vindos de instância
                                                             System.Reflection.BindingFlags.NonPublic); // Todos os membros não públicos.
             foreach (var metodo in metodos)
@@ -102,35 +105,76 @@ namespace ReflectionSamples.Solved
             Console.WriteLine(retorno);
             //TL;DR: Não. Criar objetos não se limita em chamar o construtor para gerar a instância.
             //  A forma como uma classe abstrata é gerada impede que certas alocações sejam feitas a ponto de fazê-la se tornar um objeto fora de algo que já temos.
-            //  Existe no entanto, a possibilidade de criar tipos.
+            //  Existe no entanto, a possibilidade de criar tipos e até derivá-los de outros, que é o que .
             //  Neste projeto, existe a classe TypeBuilderWithEmit, que mostra um exemplo de uma classe que é gerada do zero e faz multiplicação de um número.
+
+            //Este aqui não vai na apresentação, acho que foge demais do escopo dessa atividade.
         }
 
         //Carregar um Assembly
         public static void carregarAssembly()
         {
+            //Considere esse um gerador de números da mega sena que vai funcionar.
+            System.IO.FileInfo fi = new System.IO.FileInfo(Assembly.GetExecutingAssembly().Location);
+            Assembly geradorAssembly = Assembly.LoadFile(System.IO.Path.Combine(fi.DirectoryName, "DLL\\GeradorMegaSenaRealOficial.dll"));
 
+            var tipos = geradorAssembly.GetTypes();
+            foreach (var tipo in tipos)
+            {
+                var objGerador = Activator.CreateInstance(tipo);
+
+                Console.WriteLine($"Tipo: {tipo.Name}");
+                Console.WriteLine("Métodos (públicos):");
+
+                foreach (var constructor in tipo.GetConstructors())
+                {
+                    Console.WriteLine($"{constructor}");
+                    Console.WriteLine($"Quantidade de parâmetros do construtor: {constructor.GetParameters().Length}");
+                    //Dá pra chamar o método de invoke aqui
+                }
+
+                foreach (var metodo in tipo.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance)
+                    .Where(x => !x.GetCustomAttributes(typeof(CompilerGeneratedAttribute), true).Any()))
+                {
+                    if (metodo.IsSpecialName)
+                    {
+                        Console.WriteLine("Special**");
+                    }
+                    Console.WriteLine($"{metodo.Name}()");
+                    Console.WriteLine($"retorna: {metodo.ReturnParameter.ParameterType.Name}");
+                    Console.WriteLine($"qtd de parametros: {metodo.GetParameters().Length}");
+                    Console.WriteLine("-----");
+
+                    metodo.Invoke(objGerador, null);
+                }
+
+                Console.WriteLine("\nPropriedades");
+                foreach (var propriedade in tipo.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+                {
+                    Console.WriteLine($"{propriedade.PropertyType.Name} {propriedade.Name} = {propriedade.GetValue(objGerador) ?? "null"}");
+
+                    int[] valores = (int[])propriedade.GetValue(objGerador);
+                    foreach (var numero in valores)
+                    {
+                        Console.Write($"{numero} ");
+                    }
+
+                }
+            }
         }
 
         //Mini mapper
         public static void chamarExemploMiniMapper()
         {
+            Territorio territorio = GeradorDados.ObterTerritorioExemplo();
 
-        }
-        //Serializador/Deserializador de xml 
-        public static void chamarExemploSerializacaoComProtocoloDuvidoso()
-        {
+            TerritorioDTO dto = new TerritorioDTO();
 
-        }
-        public static void chamarExemploDeserializacaoComProtocoloDuvidoso()
-        {
+            MiniMapper.Map(territorio, dto);
 
+            Console.WriteLine(dto.nome);
         }
 
-        //Criando expressões para combar filtragens usando LINQ
-        public static void chamarExemploComboFiltro()
-        {
-
-        }
+        
     }
 }
