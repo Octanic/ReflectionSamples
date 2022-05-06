@@ -116,6 +116,8 @@ namespace ReflectionSamples.Solved
         {
             //Considere esse um gerador de números da mega sena que vai funcionar.
             System.IO.FileInfo fi = new System.IO.FileInfo(Assembly.GetExecutingAssembly().Location);
+            
+            //Usamos LoadFile porque não temos essa DLL registrada no GAC. Temos especificamente a DLL que queremos.
             Assembly geradorAssembly = Assembly.LoadFile(System.IO.Path.Combine(fi.DirectoryName, "DLL\\GeradorMegaSenaRealOficial.dll"));
 
             var tipos = geradorAssembly.GetTypes();
