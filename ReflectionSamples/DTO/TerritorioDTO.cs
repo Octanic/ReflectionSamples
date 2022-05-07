@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using ReflectionSamples.Classes;
+using System.Collections.Generic;
 
-namespace ReflectionSamples.Exemplos
+namespace ReflectionSamples.DTO
 {
     public class TerritorioDTO
     {

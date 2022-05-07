@@ -16,12 +16,12 @@ namespace ReflectionSamples.Exemplos
     {
         public static void GenerateTypeDynamically()
         {
-            // This code creates an assembly that contains one type,
-            // named "MyDynamicType", that has a private field, a property
-            // that gets and sets the private field, constructors that
-            // initialize the private field, and a method that multiplies
-            // a user-supplied number by the private field value and returns
-            // the result. In C# the type might look like this:
+            // Este código cria um assembly que tem um tipo, chamado de 
+            // "MyDynamicType", que tem um tipo privado, uma propriedade que 
+            // obtém ou define um campo privado, construtores que inicializam
+            // inicializam o campo privado, e um método que multiplica um 
+            // número suprido pelo campo privado e retorna um resultado.
+            // Em C#, o tipo seria mais ou menos assim:
             /*
             public class MyDynamicType
             {
@@ -47,175 +47,129 @@ namespace ReflectionSamples.Exemplos
             */
 
             AssemblyName aName = new AssemblyName("DynamicAssemblyExample");
-            AssemblyBuilder ab =
-                AssemblyBuilder.DefineDynamicAssembly(
-                    aName,
-                    AssemblyBuilderAccess.Run);
+            AssemblyBuilder ab = AssemblyBuilder.DefineDynamicAssembly(aName, AssemblyBuilderAccess.Run);
 
-            // The module name is usually the same as the assembly name.
-            ModuleBuilder mb =
-                ab.DefineDynamicModule(aName.Name);
+            // O nome do módulo é normalmente o mesmo do nome do assembly
+            ModuleBuilder mb = ab.DefineDynamicModule(aName.Name);
 
-            TypeBuilder tb = mb.DefineType(
-                "MyDynamicType",
-                 TypeAttributes.Public);
+            TypeBuilder tb = mb.DefineType("MyDynamicType", TypeAttributes.Public);
 
-            // Add a private field of type int (Int32).
-            FieldBuilder fbNumber = tb.DefineField(
-                "m_number",
-                typeof(int),
-                FieldAttributes.Private);
+            // adiciona um campo privado do tipo int (Int32).
+            FieldBuilder fbNumber = tb.DefineField("m_number", typeof(int), FieldAttributes.Private);
 
-            // Define a constructor that takes an integer argument and
-            // stores it in the private field.
+            // Define um construtor que pega um argumento int e armazena-o em um campo privado
             Type[] parameterTypes = { typeof(int) };
-            ConstructorBuilder ctor1 = tb.DefineConstructor(
-                MethodAttributes.Public,
-                CallingConventions.Standard,
-                parameterTypes);
+            ConstructorBuilder ctor1 = tb.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, parameterTypes);
 
             ILGenerator ctor1IL = ctor1.GetILGenerator();
-            // For a constructor, argument zero is a reference to the new
-            // instance. Push it on the stack before calling the base
-            // class constructor. Specify the default constructor of the
-            // base class (System.Object) by passing an empty array of
-            // types (Type.EmptyTypes) to GetConstructor.
+            // Para um construtor, argumento 0 é a referência para a nova
+            // instância. Empurre-a para a stack antes de chamar o construtor da classe base.
+            // Especifique o construtor padrão da classe base (System.Object)
+            // passando uma array vazia de tipos (Type.EmptyTypes) para o GetConstructor.
             ctor1IL.Emit(OpCodes.Ldarg_0);
-            ctor1IL.Emit(OpCodes.Call,
-                typeof(object).GetConstructor(Type.EmptyTypes));
-            // Push the instance on the stack before pushing the argument
-            // that is to be assigned to the private field m_number.
+            ctor1IL.Emit(OpCodes.Call, typeof(object).GetConstructor(Type.EmptyTypes));
+
+            // Empurre a instância na stack antes de mandar o argumento
+            // isso estará para ser definido ao campo privado m_number.
             ctor1IL.Emit(OpCodes.Ldarg_0);
             ctor1IL.Emit(OpCodes.Ldarg_1);
             ctor1IL.Emit(OpCodes.Stfld, fbNumber);
             ctor1IL.Emit(OpCodes.Ret);
 
-            // Define a default constructor that supplies a default value
-            // for the private field. For parameter types, pass the empty
-            // array of types or pass null.
-            ConstructorBuilder ctor0 = tb.DefineConstructor(
-                MethodAttributes.Public,
-                CallingConventions.Standard,
-                Type.EmptyTypes);
+            // Define um construtor padrão que fornece um valor padrão ao campo privado
+            // Para tipos de parâmetro, passe um array de tipos vazios ou null.
+            ConstructorBuilder ctor0 = tb.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, Type.EmptyTypes);
 
             ILGenerator ctor0IL = ctor0.GetILGenerator();
-            // For a constructor, argument zero is a reference to the new
-            // instance. Push it on the stack before pushing the default
-            // value on the stack, then call constructor ctor1.
+            // Para o construtor, argumento zero é a referência para a nova instância.
+            // Empurre-a para a stack antes de empurrar o valor padrão para a stack
+            // e então chame o construtor ctor1.
             ctor0IL.Emit(OpCodes.Ldarg_0);
             ctor0IL.Emit(OpCodes.Ldc_I4_S, 42);
             ctor0IL.Emit(OpCodes.Call, ctor1);
             ctor0IL.Emit(OpCodes.Ret);
 
-            // Define a property named Number that gets and sets the private
-            // field.
+            // Define uma propriedade chamada Number que obtém e define o campo privado
             //
-            // The last argument of DefineProperty is null, because the
-            // property has no parameters. (If you don't specify null, you must
-            // specify an array of Type objects. For a parameterless property,
-            // use the built-in array with no elements: Type.EmptyTypes)
-            PropertyBuilder pbNumber = tb.DefineProperty(
-                "Number",
-                PropertyAttributes.HasDefault,
-                typeof(int),
-                null);
+            // O último argumento da DefineProperty é null, porque a
+            // propriedade não tem parâmetros. (Se vc não especificar null, vc precisa
+            // especificar uma array de objetos Type. Para uma propriedade sem parâmetros, 
+            // use a array sem elementos que já existe: Type.EmptyTypes)
+            PropertyBuilder pbNumber = tb.DefineProperty("Number", PropertyAttributes.HasDefault, typeof(int), null);
 
-            // The property "set" and property "get" methods require a special
-            // set of attributes.
+            // Os métodos da propriedade "set" e a propriedade "get" necessitam um conjunto especial de atributos
             MethodAttributes getSetAttr = MethodAttributes.Public |
                 MethodAttributes.SpecialName | MethodAttributes.HideBySig;
 
-            // Define the "get" accessor method for Number. The method returns
-            // an integer and has no arguments. (Note that null could be
-            // used instead of Types.EmptyTypes)
-            MethodBuilder mbNumberGetAccessor = tb.DefineMethod(
-                "get_Number",
-                getSetAttr,
-                typeof(int),
-                Type.EmptyTypes);
+            // Define o método de acesso "get" para Number.
+            // O método retorna um inteiro e não tem argumento
+            // (Note que null pode ser usado ao invés de Types.EmptyTypes)
+            MethodBuilder mbNumberGetAccessor = tb.DefineMethod("get_Number", getSetAttr, typeof(int), Type.EmptyTypes);
 
             ILGenerator numberGetIL = mbNumberGetAccessor.GetILGenerator();
-            // For an instance property, argument zero is the instance. Load the
-            // instance, then load the private field and return, leaving the
-            // field value on the stack.
+            // Para uma propriedade de instância, argumento zero é a instância. Carregue a instância primeiro,
+            // então carregue o campo privado e retorne, deixando o valor do campo na pilha.
             numberGetIL.Emit(OpCodes.Ldarg_0);
             numberGetIL.Emit(OpCodes.Ldfld, fbNumber);
             numberGetIL.Emit(OpCodes.Ret);
 
-            // Define the "set" accessor method for Number, which has no return
-            // type and takes one argument of type int (Int32).
-            MethodBuilder mbNumberSetAccessor = tb.DefineMethod(
-                "set_Number",
-                getSetAttr,
-                null,
-                new Type[] { typeof(int) });
+            // Define o método de acesso "set" para Number, que não tem tipo de retorno
+            // e toma um argumento do tipo int (Int32).
+            MethodBuilder mbNumberSetAccessor = tb.DefineMethod("set_Number", getSetAttr, null, new Type[] { typeof(int) });
 
             ILGenerator numberSetIL = mbNumberSetAccessor.GetILGenerator();
-            // Load the instance and then the numeric argument, then store the
-            // argument in the field.
+            // Carrega a instância e então o argumento numérico, e o armazena no campo.
             numberSetIL.Emit(OpCodes.Ldarg_0);
             numberSetIL.Emit(OpCodes.Ldarg_1);
             numberSetIL.Emit(OpCodes.Stfld, fbNumber);
             numberSetIL.Emit(OpCodes.Ret);
 
-            // Last, map the "get" and "set" accessor methods to the
-            // PropertyBuilder. The property is now complete.
+            // Por fim, mapeia os métodos de acesso get e set para o 
+            // PropertyBuilder. A propriedade está completa.
             pbNumber.SetGetMethod(mbNumberGetAccessor);
             pbNumber.SetSetMethod(mbNumberSetAccessor);
 
-            // Define a method that accepts an integer argument and returns
-            // the product of that integer and the private field m_number. This
-            // time, the array of parameter types is created on the fly.
-            MethodBuilder meth = tb.DefineMethod(
-                "MyMethod",
-                MethodAttributes.Public,
-                typeof(int),
-                new Type[] { typeof(int) });
+            // Define um método que aceita um argumento inteiro e retorna 
+            // o produto daquele inteiro com o campo privado m_number. 
+            // Dessa vez, a array de tipos de parâmetro é criada ali na hora.
+            MethodBuilder meth = tb.DefineMethod("MyMethod", MethodAttributes.Public, typeof(int), new Type[] { typeof(int) });
 
             ILGenerator methIL = meth.GetILGenerator();
-            // To retrieve the private instance field, load the instance it
-            // belongs to (argument zero). After loading the field, load the
-            // argument one and then multiply. Return from the method with
-            // the return value (the product of the two numbers) on the
-            // execution stack.
+            // Para obter o campo da instância privada, carregue a instância a qual ele pertence,
+            // Após carregar o campo, carregue o argumento 1, e então multiplique.
+            // Retorne do método com o valor do retorno (produto de dois números) na pilha de execução.
             methIL.Emit(OpCodes.Ldarg_0);
             methIL.Emit(OpCodes.Ldfld, fbNumber);
             methIL.Emit(OpCodes.Ldarg_1);
             methIL.Emit(OpCodes.Mul);
             methIL.Emit(OpCodes.Ret);
 
-            // Finish the type.
+            // Finalize o tipo.
             Type t = tb.CreateType();
 
-            // Because AssemblyBuilderAccess includes Run, the code can be
-            // executed immediately. Start by getting reflection objects for
-            // the method and the property.
+            // Porque o AssemblyBuilderAccess inclui o método Run, o código pode ser
+            // executado imediatamente. Comece obtendo os objetos de reflexão para 
+            // o método e a propriedade.
             MethodInfo mi = t.GetMethod("MyMethod");
             PropertyInfo pi = t.GetProperty("Number");
 
-            // Create an instance of MyDynamicType using the default
-            // constructor.
+            // Crie uma instância de MyDynamicType usando o construtor padrão.
             object o1 = Activator.CreateInstance(t);
 
-            // Display the value of the property, then change it to 127 and
-            // display it again. Use null to indicate that the property
-            // has no index.
+            // Mostre o valor da propriedade e então altere-a para 127 
+            // e mostre-a novamente. Use null para indicar que a propriedade não tem index.
             Console.WriteLine("O valor padrão na classe é 42.\no1.Number: {0}", pi.GetValue(o1, null));
             pi.SetValue(o1, 127, null);
             Console.WriteLine("depois de definir o número acima para 127:\no1.Number: {0}", pi.GetValue(o1, null));
 
-            // Call MyMethod, passing 22, and display the return value, 22
-            // times 127. Arguments must be passed as an array, even when
-            // there is only one.
+            // Chame MyMethod, passando 22, e mostre o valor de retorno, 22 * 127.
+            // Argumentos devem ser passados como array, mesmo sendo apenas 1.
             object[] arguments = { 22 };
-            Console.WriteLine("multiplica o número definido anteriormente por 22:\no1.MyMethod(22): {0}",
-                mi.Invoke(o1, arguments));
+            Console.WriteLine("multiplica o número definido anteriormente por 22:\no1.MyMethod(22): {0}", mi.Invoke(o1, arguments));
 
-            // Create an instance of MyDynamicType using the constructor
-            // that specifies m_Number. The constructor is identified by
-            // matching the types in the argument array. In this case,
-            // the argument array is created on the fly. Display the
-            // property value.
+            // Cria uma instância de MyDynamicType usando o construtor que especifica 
+            // m_Number. O construtor é identificado por bater os tipos na array de argumentos.
+            // Neste caso, a array de argumentos é criada ali na hora. Daí, mostra o valor da propriedade.
             object o2 = Activator.CreateInstance(t, new object[] { 5280 });
             Console.WriteLine("cria nova instância com o número {0}\no2.Number: {0}", pi.GetValue(o2, null));
         }

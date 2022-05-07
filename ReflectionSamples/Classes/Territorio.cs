@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text;
 
-namespace ReflectionSamples.Exemplos
+namespace ReflectionSamples.Classes
 {
     public class Territorio:TerrenoAbstract
     {

@@ -1,4 +1,4 @@
-﻿namespace ReflectionSamples.Exemplos
+﻿namespace ReflectionSamples.Classes
 {
     public class Gleba : TerrenoAbstract
     {

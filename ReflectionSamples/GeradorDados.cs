@@ -1,7 +1,5 @@
-﻿using ReflectionSamples.Exemplos;
-using System;
+﻿using ReflectionSamples.Classes;
 using System.Collections.Generic;
-using System.Text;
 
 namespace ReflectionSamples
 {
